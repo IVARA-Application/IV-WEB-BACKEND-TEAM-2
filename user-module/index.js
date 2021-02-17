@@ -2,7 +2,6 @@
 require("dotenv").config();
 
 const express = require("express");
-const mongoose = require("mongoose");
 const { addNewContactUsDocument } = require("./user-controller");
 const app = express();
 
@@ -23,13 +22,4 @@ app.post("/contact-us", async (req, res) => {
   }
 });
 
-mongoose
-  .connect(process.env.MONGOOSE_URI, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-    useFindAndModify: false,
-    useCreateIndex: true,
-  })
-  .then((_) => {
-    module.exports = app;
-  });
+module.exports = app;
