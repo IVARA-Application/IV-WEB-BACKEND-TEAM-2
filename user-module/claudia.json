@@ -1,0 +1,10 @@
+{
+  "lambda": {
+    "role": "user-module-executor",
+    "name": "user-module",
+    "region": "ap-south-1"
+  },
+  "api": {
+    "id": "7v3e4r7hr3"
+  }
+}
