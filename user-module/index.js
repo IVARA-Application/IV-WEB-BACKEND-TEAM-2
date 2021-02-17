@@ -10,7 +10,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // Routes handled by the app
-app.post("/contact-us", async (req, res) => {
+app.post("/user/contact-us", async (req, res) => {
   try {
     await addNewContactUsDocument(req.body);
     res.json({ success: true, message: "Successfully stored the query" });
