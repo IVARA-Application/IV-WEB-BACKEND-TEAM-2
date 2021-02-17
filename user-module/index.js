@@ -31,6 +31,5 @@ mongoose
     useCreateIndex: true,
   })
   .then((_) => {
-    //module.exports = app;
-    app.listen(4000);
+    module.exports = app;
   });
