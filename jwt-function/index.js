@@ -1,9 +1,11 @@
 const jwt = require("jsonwebtoken");
 
-exports.handler = (event) => {
+exports.handler = (event, context) => {
   if (event.operation === "sign") {
-    return jwt.sign({ username: event.username }, process.env.JWT_SECRET);
+    context.succeed(
+      jwt.sign({ username: event.username }, process.env.JWT_SECRET)
+    );
   } else {
-    return jwt.verify(event.token, process.env.JWT_SECRET);
+    context.succeed(jwt.verify(event.token, process.env.JWT_SECRET));
   }
 };
