@@ -1,4 +1,5 @@
-const ContactSchema = require("./user-schema");
+const ContactSchema = require("./schemas/contact-us-schema");
+const UserSchema = require("./schemas/user-schema");
 const mongoose = require("mongoose");
 const { google } = require("googleapis");
 const { logger, Errors } = require("./constants");
@@ -55,6 +56,21 @@ const getUserProfile = async () => {
       version: "v2",
     });
     let res = await oauth2.userinfo.get();
+    await mongoose.connect(process.env.MONGOOSE_URI, {
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+      useFindAndModify: false,
+      useCreateIndex: true,
+    });
+    const dbData = await UserSchema.findOne({ username: res.data.email });
+    if (dbData === null) {
+      await UserSchema.create({
+        username: res.data.email,
+        firstname: res.data.given_name,
+        lastname: res.data.family_name,
+        email: res.data.email,
+      });
+    }
     return res.data;
   } catch (error) {
     logger.error(error);

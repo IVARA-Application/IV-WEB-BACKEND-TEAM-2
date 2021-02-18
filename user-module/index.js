@@ -40,8 +40,4 @@ app.get("/user/authcode", async (req, res) => {
   }
 });
 
-// module.exports = app;
-
-app.listen(5000, () => {
-  console.log("Started");
-});
+module.exports = app;
