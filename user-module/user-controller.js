@@ -1,5 +1,6 @@
 const ContactSchema = require("./schemas/contact-us-schema");
 const UserSchema = require("./schemas/user-schema");
+const { Lambda, Credentials } = require("aws-sdk");
 const mongoose = require("mongoose");
 const { google } = require("googleapis");
 const { logger, Errors } = require("./constants");
@@ -9,7 +10,19 @@ const oauth2Client = new google.auth.OAuth2(
   process.env.REDIRECT_URL
 );
 const scopes = ["profile", "email"];
+const lambda = new Lambda({
+  apiVersion: "2015-03-31",
+  region: "ap-south-1",
+  credentials: new Credentials({
+    accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+  }),
+});
 
+/**
+ * Store the contact query
+ * @param {*} data The contact query data
+ */
 const addNewContactUsDocument = async (data) => {
   try {
     await mongoose.connect(process.env.MONGOOSE_URI, {
@@ -27,6 +40,9 @@ const addNewContactUsDocument = async (data) => {
   }
 };
 
+/**
+ * Generate a unique Google login URL for the user
+ */
 const generateLoginUrl = () => {
   return oauth2Client.generateAuthUrl({
     access_type: "offline",
@@ -34,6 +50,10 @@ const generateLoginUrl = () => {
   });
 };
 
+/**
+ * Set the token supplied by Google OAuth
+ * @param {*} authObject The auth object from Google Signin
+ */
 const setToken = async (authObject) => {
   try {
     if (authObject.error) {
@@ -44,11 +64,15 @@ const setToken = async (authObject) => {
     oauth2Client.setCredentials(tokens);
     return await getUserProfile();
   } catch (error) {
+    logger.error(error);
     if (error.message === "Could not get/create user profile") throw error;
     throw Error("Could not set token");
   }
 };
 
+/**
+ * Get Google User profile and generate JWT
+ */
 const getUserProfile = async () => {
   try {
     let oauth2 = google.oauth2({
@@ -71,7 +95,17 @@ const getUserProfile = async () => {
         email: res.data.email,
       });
     }
-    return res.data;
+    const lambdaPromise = lambda
+      .invoke({
+        FunctionName: "jwt-function",
+        Payload: JSON.stringify({
+          operation: "sign",
+          username: res.data.email,
+        }),
+      })
+      .promise();
+    const responseData = await lambdaPromise;
+    return responseData.Payload;
   } catch (error) {
     logger.error(error);
     throw Error("Could not get/create user profile");

@@ -4,6 +4,7 @@
   "main": "index.js",
   "license": "MIT",
   "dependencies": {
+    "aws-sdk": "^2.846.0",
     "aws-serverless-express": "^3.4.0",
     "bunyan": "^1.8.15",
     "dotenv": "^8.2.0",
