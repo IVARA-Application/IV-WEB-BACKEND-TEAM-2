@@ -1,7 +1,28 @@
-const ContactSchema = require("./user-schema");
+const ContactSchema = require("./schemas/contact-us-schema");
+const UserSchema = require("./schemas/user-schema");
+const { Lambda, Credentials } = require("aws-sdk");
 const mongoose = require("mongoose");
+const { google } = require("googleapis");
 const { logger, Errors } = require("./constants");
+const oauth2Client = new google.auth.OAuth2(
+  process.env.CLIENT_ID,
+  process.env.CLIENT_SECRET,
+  process.env.REDIRECT_URL
+);
+const scopes = ["profile", "email"];
+const lambda = new Lambda({
+  apiVersion: "2015-03-31",
+  region: "ap-south-1",
+  credentials: new Credentials({
+    accessKeyId: process.env.ACCESS_KEY_ID,
+    secretAccessKey: process.env.SECRET_ACCESS_KEY,
+  }),
+});
 
+/**
+ * Store the contact query
+ * @param {*} data The contact query data
+ */
 const addNewContactUsDocument = async (data) => {
   try {
     await mongoose.connect(process.env.MONGOOSE_URI, {
@@ -19,6 +40,80 @@ const addNewContactUsDocument = async (data) => {
   }
 };
 
+/**
+ * Generate a unique Google login URL for the user
+ */
+const generateLoginUrl = () => {
+  return oauth2Client.generateAuthUrl({
+    access_type: "offline",
+    scope: scopes,
+  });
+};
+
+/**
+ * Set the token supplied by Google OAuth
+ * @param {*} authObject The auth object from Google Signin
+ */
+const setToken = async (authObject) => {
+  try {
+    if (authObject.error) {
+      console.log(authObject.error);
+      throw Error("Access denied");
+    }
+    const { tokens } = await oauth2Client.getToken(authObject.code);
+    oauth2Client.setCredentials(tokens);
+    return await getUserProfile();
+  } catch (error) {
+    logger.error(error);
+    if (error.message === "Could not get/create user profile") throw error;
+    throw Error("Could not set token");
+  }
+};
+
+/**
+ * Get Google User profile and generate JWT
+ */
+const getUserProfile = async () => {
+  try {
+    let oauth2 = google.oauth2({
+      auth: oauth2Client,
+      version: "v2",
+    });
+    let res = await oauth2.userinfo.get();
+    await mongoose.connect(process.env.MONGOOSE_URI, {
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+      useFindAndModify: false,
+      useCreateIndex: true,
+    });
+    const dbData = await UserSchema.findOne({ username: res.data.email });
+    if (dbData === null) {
+      await UserSchema.create({
+        username: res.data.email,
+        firstname: res.data.given_name,
+        lastname: res.data.family_name,
+        email: res.data.email,
+      });
+    }
+    const lambdaPromise = lambda
+      .invoke({
+        FunctionName: "jwt-function",
+        Payload: JSON.stringify({
+          operation: "sign",
+          username: res.data.email,
+        }),
+      })
+      .promise();
+    const responseData = await lambdaPromise;
+    return responseData.Payload;
+  } catch (error) {
+    logger.error(error);
+    throw Error("Could not get/create user profile");
+  }
+};
+
 module.exports = {
   addNewContactUsDocument: addNewContactUsDocument,
+  generateLoginUrl: generateLoginUrl,
+  setGoogleToken: setToken,
 };
