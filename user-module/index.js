@@ -2,6 +2,7 @@
 require("dotenv").config();
 
 const express = require("express");
+const cors = require("cors");
 const { logger } = require("./constants");
 const {
   addNewContactUsDocument,
@@ -11,6 +12,7 @@ const {
 const app = express();
 
 // Middlewares required by the app
+app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
