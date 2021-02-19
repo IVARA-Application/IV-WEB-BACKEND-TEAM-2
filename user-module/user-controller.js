@@ -62,7 +62,7 @@ const setToken = async (authObject) => {
     }
     const { tokens } = await oauth2Client.getToken(authObject.code);
     oauth2Client.setCredentials(tokens);
-    return await getUserProfile();
+    return await getGoogleUserProfile();
   } catch (error) {
     logger.error(error);
     if (error.message === "Could not get/create user profile") throw error;
@@ -73,7 +73,7 @@ const setToken = async (authObject) => {
 /**
  * Get Google User profile and generate JWT
  */
-const getUserProfile = async () => {
+const getGoogleUserProfile = async () => {
   try {
     let oauth2 = google.oauth2({
       auth: oauth2Client,
@@ -112,8 +112,38 @@ const getUserProfile = async () => {
   }
 };
 
+const getUser = async (token) => {
+  try {
+    const lambdaPromise = lambda
+      .invoke({
+        FunctionName: "jwt-function",
+        Payload: JSON.stringify({
+          operation: "verify",
+          token: token,
+        }),
+      })
+      .promise();
+    const responseData = await lambdaPromise;
+    const responseObject = JSON.parse(responseData.Payload);
+    if (responseObject.errorMessage) throw responseObject.errorMessage;
+    await mongoose.connect(process.env.MONGOOSE_URI, {
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+      useFindAndModify: false,
+      useCreateIndex: true,
+    });
+    return await UserSchema.findOne({
+      username: responseObject.username,
+    });
+  } catch (error) {
+    logger.error(error);
+    throw Error("Could not validate user");
+  }
+};
+
 module.exports = {
   addNewContactUsDocument: addNewContactUsDocument,
   generateLoginUrl: generateLoginUrl,
   setGoogleToken: setToken,
+  getUser: getUser,
 };

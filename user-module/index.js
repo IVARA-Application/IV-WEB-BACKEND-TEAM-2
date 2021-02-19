@@ -8,6 +8,7 @@ const {
   addNewContactUsDocument,
   generateLoginUrl,
   setGoogleToken,
+  getUser,
 } = require("./user-controller");
 const app = express();
 
@@ -31,16 +32,32 @@ app.post("/user/contact-us", async (req, res) => {
   }
 });
 
-// User Login endpoint
-app.get("/user/login", async (req, res) => {
+// Google User Login endpoint
+app.get("/user/glogin", async (req, res) => {
   res.redirect(generateLoginUrl());
 });
 
-// JWT Generation endpoint
-app.post("/user", async (req, res) => {
+// Gooegle User JWT Generation endpoint
+app.post("/user/google", async (req, res) => {
   try {
     const data = await setGoogleToken(req.body);
     res.json({ success: true, token: data.substring(1, data.length - 1) });
+  } catch (error) {
+    logger.error(error);
+    res.json({ status: 500, message: error.message });
+  }
+});
+
+// Replace token to get user profile
+app.get("/user", async (req, res) => {
+  try {
+    const user = await getUser(req.headers.authorization);
+    res.json({
+      success: true,
+      firstname: user.firstname,
+      lastname: user.lastname,
+      email: user.email,
+    });
   } catch (error) {
     logger.error(error);
     res.json({ status: 500, message: error.message });
