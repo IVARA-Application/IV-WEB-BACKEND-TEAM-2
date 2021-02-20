@@ -4,7 +4,7 @@ require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
 const { logger } = require("./constants");
-const { fetchAllCourses } = require("./entrance-exam-controller");
+const { fetchAllCourses } = require("./course-database-controller");
 const authenticate = require("./auth-middleware");
 
 const app = express();
@@ -19,6 +19,11 @@ app.use(express.urlencoded({ extended: true }));
 // Fetch a list of all courses
 app.get("/courses", authenticate, async (req, res) => {
   try {
+    res.set({
+      "Access-Control-Allow-Origin": "*",
+      "Access-Control-Allow-Credentials": true,
+      "Access-Control-Allow-Headers": "*",
+    });
     res.json(await fetchAllCourses());
   } catch (error) {
     logger.error(error);
@@ -29,7 +34,3 @@ app.get("/courses", authenticate, async (req, res) => {
 });
 
 module.exports = app;
-
-app.listen(4000, () => {
-  console.log("4000");
-});

@@ -1,0 +1,10 @@
+{
+  "lambda": {
+    "role": "course-database-module-executor",
+    "name": "course-database-module",
+    "region": "ap-south-1"
+  },
+  "api": {
+    "id": "djx0gijz6j"
+  }
+}

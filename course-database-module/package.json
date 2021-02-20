@@ -1,19 +1,22 @@
 {
-  "name": "entrance-exam-module",
+  "name": "course-database-module",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
   "author": "",
   "license": "ISC",
   "dependencies": {
     "aws-sdk": "^2.848.0",
+    "aws-serverless-express": "^3.4.0",
     "bunyan": "^1.8.15",
     "cors": "^2.8.5",
     "dotenv": "^8.2.0",
     "express": "^4.17.1",
     "mongoose": "^5.11.17"
+  },
+  "scripts": {
+    "generate": "claudia generate-serverless-express-proxy --express-module index",
+    "deploy-init": "claudia create --handler lambda.handler --deploy-proxy-api --region ap-south-1",
+    "deploy": "claudia update"
   }
 }
