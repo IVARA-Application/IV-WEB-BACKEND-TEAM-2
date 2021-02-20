@@ -5,6 +5,7 @@ const express = require("express");
 const cors = require("cors");
 const { logger } = require("./constants");
 const { fetchAllCourses } = require("./entrance-exam-controller");
+const authenticate = require("./auth-middleware");
 
 const app = express();
 
@@ -16,7 +17,7 @@ app.use(express.urlencoded({ extended: true }));
 // Routes handled by the app
 
 // Fetch a list of all courses
-app.get("/courses", async (req, res) => {
+app.get("/courses", authenticate, async (req, res) => {
   try {
     res.json(await fetchAllCourses());
   } catch (error) {
