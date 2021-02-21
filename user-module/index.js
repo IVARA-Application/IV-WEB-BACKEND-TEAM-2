@@ -26,6 +26,11 @@ app.post("/user/contact-us", async (req, res) => {
     res.json({ success: true, message: "Successfully stored the query" });
   } catch (error) {
     logger.error(error);
+    res.set({
+      "Access-Control-Allow-Origin": "*",
+      "Access-Control-Allow-Credentials": true,
+      "Access-Control-Allow-Headers": "*",
+    });
     res
       .status(error.code || 500)
       .json({ success: false, message: error.message });
@@ -34,6 +39,11 @@ app.post("/user/contact-us", async (req, res) => {
 
 // Google User Login endpoint
 app.get("/user/glogin", async (req, res) => {
+  res.set({
+    "Access-Control-Allow-Origin": "*",
+    "Access-Control-Allow-Credentials": true,
+    "Access-Control-Allow-Headers": "*",
+  });
   res.redirect(generateLoginUrl());
 });
 
@@ -41,6 +51,11 @@ app.get("/user/glogin", async (req, res) => {
 app.post("/user/google", async (req, res) => {
   try {
     const data = await setGoogleToken(req.body);
+    res.set({
+      "Access-Control-Allow-Origin": "*",
+      "Access-Control-Allow-Credentials": true,
+      "Access-Control-Allow-Headers": "*",
+    });
     res.json({ success: true, token: data.substring(1, data.length - 1) });
   } catch (error) {
     logger.error(error);
@@ -52,6 +67,11 @@ app.post("/user/google", async (req, res) => {
 app.get("/user", async (req, res) => {
   try {
     const user = await getUser(req.headers.authorization);
+    res.set({
+      "Access-Control-Allow-Origin": "*",
+      "Access-Control-Allow-Credentials": true,
+      "Access-Control-Allow-Headers": "*",
+    });
     res.json({
       success: true,
       firstname: user.firstname,
