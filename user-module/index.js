@@ -9,6 +9,7 @@ const {
   generateLoginUrl,
   setGoogleToken,
   getUser,
+  sendContactUsNotificationEmail,
 } = require("./user-controller");
 const app = express();
 
