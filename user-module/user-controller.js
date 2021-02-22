@@ -31,12 +31,34 @@ const addNewContactUsDocument = async (data) => {
       useFindAndModify: false,
       useCreateIndex: true,
     });
-    const document = await ContactSchema.create(data);
+    let promiseArray = [];
+    promiseArray.push(ContactSchema.create(data));
+    promiseArray.push(sendContactUsNotificationEmail(data));
+    await Promise.all(promiseArray);
     logger.info("Contact Us Document has been stored");
-    logger.info(document);
   } catch (error) {
     logger.error(error);
     throw Errors.INTERNAL_SERVER_ERROR;
+  }
+};
+
+/**
+ * Send Contact Us Notification Email
+ * @param {*} data The user data to include in the email
+ */
+const sendContactUsNotificationEmail = async (data) => {
+  try {
+    const lambdaPromise = lambda
+      .invoke({
+        FunctionName: "nodemailer-notification-function",
+        InvocationType: "Event",
+        Payload: JSON.stringify(data),
+      })
+      .promise();
+    const response = await lambdaPromise;
+    logger.info(response);
+  } catch (error) {
+    logger.error(error);
   }
 };
 
@@ -143,6 +165,7 @@ const getUser = async (token) => {
 
 module.exports = {
   addNewContactUsDocument: addNewContactUsDocument,
+  sendContactUsNotificationEmail: sendContactUsNotificationEmail,
   generateLoginUrl: generateLoginUrl,
   setGoogleToken: setToken,
   getUser: getUser,
