@@ -1,5 +1,6 @@
 const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
+require("./subject-schema");
 
 const CourseSchema = new Schema({
   //Entrace exams, Skill Development, Virtual Classes
@@ -14,7 +15,7 @@ const CourseSchema = new Schema({
         {
           //jeePhysics, boardPhysics, Aptitude
           type: Schema.Types.ObjectId,
-          ref: "Subject",
+          ref: "SubjectSchema",
         },
       ],
     },
