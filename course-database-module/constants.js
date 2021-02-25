@@ -7,6 +7,10 @@ const Errors = {
     message:
       "Opps! Something went wrong on our end. We have our best minds working on it.",
   },
+  RESOURCE_NOT_FOUND_ERROR: {
+    code: 400,
+    message: "Opps! The requested resource was not found.",
+  },
 };
 
 module.exports = {
