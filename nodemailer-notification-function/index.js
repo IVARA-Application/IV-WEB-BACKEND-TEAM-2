@@ -49,7 +49,7 @@ exports.handler = async (event) => {
     Name: ${event.name}
     Email: ${event.email},
     Query: ${event.query}`,
-    to: "me@aniruddha.net",
+    to: process.env.TO,
     from: process.env.EMAIL,
   });
 
