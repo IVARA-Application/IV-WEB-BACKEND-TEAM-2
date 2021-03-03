@@ -42,7 +42,7 @@ app.get("/subjects", authenticate, async (req, res) => {
       "Access-Control-Allow-Credentials": true,
       "Access-Control-Allow-Headers": "*",
     });
-    res.json(await fetchAllSubjects(req.query.course));
+    res.json(await fetchAllSubjects(req.query.subcourse, req.query.subject));
   } catch (error) {
     logger.error(error);
     res
