@@ -1,6 +1,17 @@
+"use strict";
+const { S3, Credentials } = require("aws-sdk");
 const CourseSchema = require("./schemas/course-schema");
 const { logger, Errors } = require("./constants");
 const mongoose = require("mongoose");
+
+const s3 = new S3({
+  apiVersion: "2006-03-01",
+  region: "ap-south-1",
+  credentials: new Credentials({
+    accessKeyId: process.env.ACCESS_KEY_ID,
+    secretAccessKey: process.env.SECRET_ACCESS_KEY,
+  }),
+});
 
 /**
  * Fetch Course details
@@ -67,7 +78,28 @@ const fetchAllSubjects = async (subCourseName, subject) => {
   }
 };
 
+const fetchVideoUrl = async (objectName) => {
+  try {
+    await s3
+      .headObject({
+        Bucket: process.env.BUCKET_NAME,
+        Key: objectName,
+      })
+      .promise();
+    return await s3.getSignedUrlPromise("getObject", {
+      Bucket: process.env.BUCKET_NAME,
+      Key: objectName,
+      Expires: 7200,
+    });
+  } catch (error) {
+    logger.error(error);
+    if (typeof error.code === "number") throw error;
+    throw Errors.RESOURCE_NOT_FOUND_ERROR;
+  }
+};
+
 module.exports = {
   fetchAllCourses: fetchAllCourses,
   fetchAllSubjects: fetchAllSubjects,
+  fetchVideoUrl: fetchVideoUrl,
 };
