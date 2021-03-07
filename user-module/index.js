@@ -58,7 +58,7 @@ app.post("/user/login", async (req, res) => {
       "Access-Control-Allow-Credentials": true,
       "Access-Control-Allow-Headers": "*",
     });
-    res.json({ success: true, token: data.substring(1, data.length - 1) });
+    res.json({ success: true, token: data });
   } catch (error) {
     logger.error(error);
     res.set({
@@ -106,7 +106,9 @@ app.post("/user/google", async (req, res) => {
     res.json({ success: true, token: data.substring(1, data.length - 1) });
   } catch (error) {
     logger.error(error);
-    res.json({ status: 500, message: error.message });
+    res
+      .status(error.code || 500)
+      .json({ success: false, message: error.message });
   }
 });
 
@@ -127,7 +129,9 @@ app.get("/user", async (req, res) => {
     });
   } catch (error) {
     logger.error(error);
-    res.json({ status: 500, message: error.message });
+    res
+      .status(error.code || 500)
+      .json({ success: false, message: error.message });
   }
 });
 

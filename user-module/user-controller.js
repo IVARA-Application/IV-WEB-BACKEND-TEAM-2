@@ -161,7 +161,7 @@ const getUser = async (token) => {
     });
   } catch (error) {
     logger.error(error);
-    throw Error("Could not validate user");
+    throw { code: 403, message: "Could not validate user" };
   }
 };
 
@@ -181,7 +181,7 @@ const userLogin = async (username, password) => {
           FunctionName: "jwt-function",
           Payload: JSON.stringify({
             operation: "sign",
-            username: username,
+            username: dbData.username,
           }),
         })
         .promise();
