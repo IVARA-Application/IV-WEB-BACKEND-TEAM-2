@@ -14,6 +14,19 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 app.use("/student", userController());
+// Central Error Handler
+app.use(function errorHandler(err, req, res, next) {
+  logger.error(err);
+  if (res.headersSent) {
+    return next(err);
+  }
+  res.status(500);
+  res.json({
+    success: false,
+    message: "Something went wrong at the server.",
+    details: err.message,
+  });
+});
 
 module.exports = app;
 
