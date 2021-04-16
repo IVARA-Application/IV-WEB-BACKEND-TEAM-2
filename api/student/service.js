@@ -1,7 +1,9 @@
 "use strict";
 
 const { nanoid } = require("nanoid");
+const converter = require("json-2-csv");
 const { connect, disconnect } = require("../utilities/database");
+const logger = require("../utilities/logger");
 
 /**
  * Verify username and password and generate a JWT
@@ -69,4 +71,20 @@ const addNewStudent = async (name, email, code) => {
   return newStudent;
 };
 
-module.exports = { verifyStudentLogin, addNewStudent };
+const addNewStudentsInBulk = async (file, code) => {
+  const jsonData = await converter.csv2jsonAsync(file.toString());
+  let responseArray = [];
+  for (let i = 0; i < jsonData.length; i++) {
+    let element = jsonData[i];
+    try {
+      responseArray.push(
+        await addNewStudent(element.name, element.email, code)
+      );
+    } catch (error) {
+      logger.error(error);
+    }
+  }
+  return Buffer.from(await converter.json2csvAsync(responseArray), "utf8");
+};
+
+module.exports = { verifyStudentLogin, addNewStudent, addNewStudentsInBulk };
