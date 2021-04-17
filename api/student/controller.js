@@ -30,11 +30,10 @@ const studentLoginController = async (req, res) => {
   try {
     const { username, password } = req.body;
     // Pass control to service layer
-    await verifyStudentLogin(username, password);
-    // User was verified and token was generated
     res.json({
       success: true,
       message: `Student ${username} has been logged in.`,
+      ...(await verifyStudentLogin(username, password)),
     });
   } catch (error) {
     logger.error(error);

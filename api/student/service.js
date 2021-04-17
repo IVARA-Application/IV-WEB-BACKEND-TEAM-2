@@ -6,6 +6,7 @@ const argon2 = require("argon2");
 const { connect, disconnect } = require("../utilities/database");
 const logger = require("../utilities/logger");
 const { studentMongodbSchema } = require("./schemas");
+const { signJwt } = require("../utilities/jwt");
 
 /**
  * Verify username and password and generate a JWT
@@ -24,7 +25,17 @@ const verifyStudentLogin = async (username, password) => {
       code: 404,
       message: `Student ${username} was not found in the database.`,
     };
+  if (!(await argon2.verify(user.hash, password)))
+    throw {
+      custom: true,
+      code: 403,
+      message: `Incorrect student credentials.`,
+    };
   await disconnect();
+  return {
+    name: user.name.split(" ")[0],
+    token: signJwt({ email: user.email }),
+  };
 };
 
 /**
