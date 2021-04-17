@@ -19,4 +19,13 @@ const studentMongodbSchema = new yup.ObjectSchema({
   hash: yup.string().min(1).trim().required(),
 });
 
-module.exports = { newStudentBodySchema, studentMongodbSchema };
+const studentLoginSchema = new yup.ObjectSchema({
+  username: yup.string().min(1).trim().required(),
+  password: yup.string().min(1).trim().required(),
+});
+
+module.exports = {
+  newStudentBodySchema,
+  studentMongodbSchema,
+  studentLoginSchema,
+};

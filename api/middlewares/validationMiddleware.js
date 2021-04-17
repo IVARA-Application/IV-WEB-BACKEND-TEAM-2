@@ -16,7 +16,6 @@ const validationMiddleware = (location, schema) => {
       next();
     } catch (error) {
       logger.error(error);
-      await disconnect();
       if (error.custom) {
         return res
           .status(error.code)

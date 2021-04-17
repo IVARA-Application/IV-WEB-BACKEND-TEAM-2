@@ -33,9 +33,22 @@ const verifyStudentLogin = async (username, password) => {
     };
   await disconnect();
   return {
-    name: user.name.split(" ")[0],
     token: signJwt({ email: user.email }),
   };
+};
+
+const fetchStudentProfile = async (email) => {
+  const student = await (await connect())
+    .collection("students")
+    .findOne({ email }, { projection: { hash: 0, username: 0, _id: 0 } });
+  if (student === null)
+    throw {
+      custom: true,
+      code: 404,
+      message: `Student with email ${email} was not found in the database.`,
+    };
+  await disconnect();
+  return student;
 };
 
 /**
@@ -132,4 +145,9 @@ const addNewStudentsInBulk = async (file, code) => {
   return Buffer.from(await converter.json2csvAsync(responseArray), "utf8");
 };
 
-module.exports = { verifyStudentLogin, addNewStudent, addNewStudentsInBulk };
+module.exports = {
+  verifyStudentLogin,
+  fetchStudentProfile,
+  addNewStudent,
+  addNewStudentsInBulk,
+};
