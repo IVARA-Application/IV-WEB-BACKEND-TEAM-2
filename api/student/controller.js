@@ -23,6 +23,8 @@ const {
   addNewStudent,
   addNewStudentsInBulk,
 } = require("./service");
+const { validationMiddleware } = require("../middlewares/validationMiddleware");
+const { newStudentBodySchema } = require("./schemas");
 
 const studentLoginController = async (req, res) => {
   try {
@@ -101,7 +103,12 @@ const app = Router();
 
 module.exports = () => {
   app.post("/login", studentLoginController);
-  app.post("/register", adminAuthMiddleware, studentRegisterController);
+  app.post(
+    "/register",
+    adminAuthMiddleware,
+    validationMiddleware("body", newStudentBodySchema),
+    studentRegisterController
+  );
   app.post(
     "/bulkregister",
     adminAuthMiddleware,

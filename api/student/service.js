@@ -5,6 +5,7 @@ const converter = require("json-2-csv");
 const argon2 = require("argon2");
 const { connect, disconnect } = require("../utilities/database");
 const logger = require("../utilities/logger");
+const { studentMongodbSchema } = require("./schemas");
 
 /**
  * Verify username and password and generate a JWT
@@ -27,9 +28,12 @@ const verifyStudentLogin = async (username, password) => {
 };
 
 /**
- * Add a new student
- * @param {string} name The name of the student
- * @param {string} email The email of the student
+ * Add a new student to the database
+ * @param {string} name The full name of the student
+ * @param {string} email The email address of the student
+ * @param {string} studentClass The class of the student
+ * @param {string} section The section of the student
+ * @param {string} roll The roll no. of the student
  * @param {string} code The school code of the student
  * @returns The newly added student data
  */
@@ -80,6 +84,7 @@ const addNewStudent = async (
   // Store the hash in the database and return raw password
   const { password, ...properties } = newStudent;
   const hash = await argon2.hash(password);
+  await studentMongodbSchema.validate({ ...properties, hash });
   await (await connect())
     .collection("students")
     .insertOne({ ...properties, hash });
