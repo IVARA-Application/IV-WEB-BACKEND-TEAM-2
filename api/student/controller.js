@@ -50,12 +50,19 @@ const studentLoginController = async (req, res) => {
 
 const studentRegisterController = async (req, res) => {
   try {
-    const { name, email, code } = req.body;
+    const { name, email, studentClass, section, roll, code } = req.body;
     // Pass control to service layer
     res.json({
       success: true,
       message: "New student was added.",
-      student: await addNewStudent(name, email, code),
+      student: await addNewStudent(
+        name,
+        email,
+        studentClass,
+        section,
+        roll,
+        code
+      ),
     });
   } catch (error) {
     logger.error(error);

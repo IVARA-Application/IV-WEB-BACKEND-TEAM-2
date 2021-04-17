@@ -2,6 +2,7 @@
 
 const { nanoid } = require("nanoid");
 const converter = require("json-2-csv");
+const argon2 = require("argon2");
 const { connect, disconnect } = require("../utilities/database");
 const logger = require("../utilities/logger");
 
@@ -32,7 +33,14 @@ const verifyStudentLogin = async (username, password) => {
  * @param {string} code The school code of the student
  * @returns The newly added student data
  */
-const addNewStudent = async (name, email, code) => {
+const addNewStudent = async (
+  name,
+  email,
+  studentClass,
+  section,
+  roll,
+  code
+) => {
   const schoolData = await (await connect())
     .collection("schools")
     .findOne({ code });
@@ -63,23 +71,44 @@ const addNewStudent = async (name, email, code) => {
     name,
     email,
     code,
+    class: studentClass,
+    section,
+    roll,
     username: `iv-${code}-${exisitingStudentsArray.length + 1}`,
     password: nanoid(8),
   };
-  await (await connect()).collection("students").insertOne(newStudent);
+  // Store the hash in the database and return raw password
+  const { password, ...properties } = newStudent;
+  const hash = await argon2.hash(password);
+  await (await connect())
+    .collection("students")
+    .insertOne({ ...properties, hash });
   await disconnect();
   return newStudent;
 };
 
+/**
+ * Add students in bulk
+ * @param {Buffer} file The buffer of the CSV file
+ * @param {string} code The school code
+ * @returns
+ */
 const addNewStudentsInBulk = async (file, code) => {
   const jsonData = await converter.csv2jsonAsync(file.toString());
   let responseArray = [];
   for (let i = 0; i < jsonData.length; i++) {
     let element = jsonData[i];
     try {
-      responseArray.push(
-        await addNewStudent(element.name, element.email, code)
+      const data = await addNewStudent(
+        element.name,
+        element.email,
+        element.studentClass,
+        element.section,
+        element.roll,
+        code
       );
+      const { _id, ...properties } = data;
+      responseArray.push(properties);
     } catch (error) {
       logger.error(error);
     }
