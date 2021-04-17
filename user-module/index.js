@@ -9,7 +9,8 @@ const {
   generateLoginUrl,
   setGoogleToken,
   getUser,
-  sendContactUsNotificationEmail,
+  userLogin,
+  createCustomUser,
 } = require("./user-controller");
 const app = express();
 
@@ -48,7 +49,52 @@ app.get("/user/glogin", async (req, res) => {
   res.redirect(generateLoginUrl());
 });
 
-// Gooegle User JWT Generation endpoint
+// User login JWT generation endpoint
+app.post("/user/login", async (req, res) => {
+  try {
+    const data = await userLogin(req.body.username, req.body.password);
+    res.set({
+      "Access-Control-Allow-Origin": "*",
+      "Access-Control-Allow-Credentials": true,
+      "Access-Control-Allow-Headers": "*",
+    });
+    res.json({ success: true, token: data });
+  } catch (error) {
+    logger.error(error);
+    res.set({
+      "Access-Control-Allow-Origin": "*",
+      "Access-Control-Allow-Credentials": true,
+      "Access-Control-Allow-Headers": "*",
+    });
+    res
+      .status(error.code || 500)
+      .json({ success: false, message: error.message });
+  }
+});
+
+app.post("/user/register", async (req, res) => {
+  try {
+    await createCustomUser(req.body, req.get("x-admin-token"));
+    res.set({
+      "Access-Control-Allow-Origin": "*",
+      "Access-Control-Allow-Credentials": true,
+      "Access-Control-Allow-Headers": "*",
+    });
+    res.json({ success: true, message: "User has been created succesfully" });
+  } catch (error) {
+    logger.error(error);
+    res.set({
+      "Access-Control-Allow-Origin": "*",
+      "Access-Control-Allow-Credentials": true,
+      "Access-Control-Allow-Headers": "*",
+    });
+    res
+      .status(error.code || 500)
+      .json({ success: false, message: error.message });
+  }
+});
+
+// Google User JWT Generation endpoint
 app.post("/user/google", async (req, res) => {
   try {
     const data = await setGoogleToken(req.body);
@@ -60,7 +106,9 @@ app.post("/user/google", async (req, res) => {
     res.json({ success: true, token: data.substring(1, data.length - 1) });
   } catch (error) {
     logger.error(error);
-    res.json({ status: 500, message: error.message });
+    res
+      .status(error.code || 500)
+      .json({ success: false, message: error.message });
   }
 });
 
@@ -81,8 +129,14 @@ app.get("/user", async (req, res) => {
     });
   } catch (error) {
     logger.error(error);
-    res.json({ status: 500, message: error.message });
+    res
+      .status(error.code || 500)
+      .json({ success: false, message: error.message });
   }
 });
 
 module.exports = app;
+
+app.listen(4000, () => {
+  console.log("Started on Port 4000");
+});
