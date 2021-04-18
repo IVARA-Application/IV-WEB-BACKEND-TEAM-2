@@ -16,29 +16,46 @@ const upload = multer({
 const { disconnect } = require("../utilities/database");
 const {
   adminAuthMiddleware,
+  studentAuthMiddleware,
 } = require("../middlewares/authenticationMiddleware");
 const logger = require("../utilities/logger");
 const {
   verifyStudentLogin,
   addNewStudent,
   addNewStudentsInBulk,
+  fetchStudentProfile,
 } = require("./service");
 const { validationMiddleware } = require("../middlewares/validationMiddleware");
-const { newStudentBodySchema } = require("./schemas");
+const { newStudentBodySchema, studentLoginSchema } = require("./schemas");
 
 const studentLoginController = async (req, res) => {
   try {
     const { username, password } = req.body;
     // Pass control to service layer
-    await verifyStudentLogin(username, password);
-    // User was verified and token was generated
     res.json({
       success: true,
       message: `Student ${username} has been logged in.`,
+      ...(await verifyStudentLogin(username, password)),
     });
   } catch (error) {
     logger.error(error);
-    await disconnect();
+    if (error.custom) {
+      return res
+        .status(error.code)
+        .json({ success: false, message: error.message });
+    }
+    res
+      .status(500)
+      .json({ success: false, message: "Something went wrong at the server." });
+  }
+};
+
+const studentProfileController = async (req, res) => {
+  try {
+    // Pass control to service layer
+    res.json(await fetchStudentProfile(res.locals.user.email));
+  } catch (error) {
+    logger.error(error);
     if (error.custom) {
       return res
         .status(error.code)
@@ -68,7 +85,6 @@ const studentRegisterController = async (req, res) => {
     });
   } catch (error) {
     logger.error(error);
-    await disconnect();
     if (error.custom) {
       return res
         .status(error.code)
@@ -87,7 +103,6 @@ const bulkStudentRegisterController = async (req, res) => {
     res.end(await addNewStudentsInBulk(req.file.buffer, req.body.code));
   } catch (error) {
     logger.error(error);
-    await disconnect();
     if (error.custom) {
       return res
         .status(error.code)
@@ -102,7 +117,12 @@ const bulkStudentRegisterController = async (req, res) => {
 const app = Router();
 
 module.exports = () => {
-  app.post("/login", studentLoginController);
+  app.get("/profile", studentAuthMiddleware, studentProfileController);
+  app.post(
+    "/login",
+    validationMiddleware("body", studentLoginSchema),
+    studentLoginController
+  );
   app.post(
     "/register",
     adminAuthMiddleware,

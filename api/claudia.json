@@ -1,0 +1,10 @@
+{
+  "lambda": {
+    "role": "ivara-executor",
+    "name": "ivara",
+    "region": "ap-south-1"
+  },
+  "api": {
+    "id": "hro2ywog4d"
+  }
+}

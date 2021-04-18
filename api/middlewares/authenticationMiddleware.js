@@ -1,10 +1,44 @@
 "use strict";
 
 const { connect, disconnect } = require("../utilities/database");
+const { verifyJwt } = require("../utilities/jwt");
 const logger = require("../utilities/logger");
 
-// TODO: Complete userAuthMiddleware function
-const userAuthMiddleware = (req, res, next) => {};
+const studentAuthMiddleware = async (req, res, next) => {
+  try {
+    const token = req.header("Authorization");
+    // Verify token
+    if (token) {
+      const decodedData = verifyJwt(token.split(" ")[1]);
+      if (!decodedData)
+        throw {
+          custom: true,
+          code: 403,
+          message:
+            "Could not verify admin token. Student is forbidden from doing this action.",
+        };
+      res.locals.user = decodedData;
+      return next();
+    }
+    throw {
+      custom: true,
+      code: 403,
+      message:
+        "Could not find Authorization header. Student is forbidden from doing this action.",
+    };
+  } catch (error) {
+    logger.error(error);
+    await disconnect();
+    if (error.custom) {
+      return res
+        .status(error.code)
+        .json({ success: false, message: error.message });
+    }
+    res
+      .status(500)
+      .json({ success: false, message: "Something went wrong at the server." });
+  }
+};
 
 const adminAuthMiddleware = async (req, res, next) => {
   try {
@@ -45,4 +79,4 @@ const adminAuthMiddleware = async (req, res, next) => {
   }
 };
 
-module.exports = { adminAuthMiddleware };
+module.exports = { studentAuthMiddleware, adminAuthMiddleware };
