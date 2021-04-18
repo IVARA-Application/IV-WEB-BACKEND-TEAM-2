@@ -39,7 +39,6 @@ const studentLoginController = async (req, res) => {
     });
   } catch (error) {
     logger.error(error);
-    await disconnect();
     if (error.custom) {
       return res
         .status(error.code)
@@ -57,7 +56,6 @@ const studentProfileController = async (req, res) => {
     res.json(await fetchStudentProfile(res.locals.user.email));
   } catch (error) {
     logger.error(error);
-    await disconnect();
     if (error.custom) {
       return res
         .status(error.code)
@@ -87,7 +85,6 @@ const studentRegisterController = async (req, res) => {
     });
   } catch (error) {
     logger.error(error);
-    await disconnect();
     if (error.custom) {
       return res
         .status(error.code)
@@ -106,7 +103,6 @@ const bulkStudentRegisterController = async (req, res) => {
     res.end(await addNewStudentsInBulk(req.file.buffer, req.body.code));
   } catch (error) {
     logger.error(error);
-    await disconnect();
     if (error.custom) {
       return res
         .status(error.code)
