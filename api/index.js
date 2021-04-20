@@ -6,6 +6,7 @@ const express = require("express");
 const cors = require("cors");
 const logger = require("./utilities/logger");
 const studentController = require("./student/controller");
+const courseController = require("./course/controller");
 const frontendController = require("./frontend/controller");
 
 const app = express();
@@ -15,6 +16,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 app.use("/student", studentController());
+app.use("/course", courseController());
 app.use("/frontend", frontendController());
 // Central Error Handler
 app.use(function errorHandler(err, req, res, next) {

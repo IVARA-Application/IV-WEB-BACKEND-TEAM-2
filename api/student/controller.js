@@ -13,7 +13,6 @@ const upload = multer({
     callback(null, true);
   },
 });
-const { disconnect } = require("../utilities/database");
 const {
   adminAuthMiddleware,
   studentAuthMiddleware,
