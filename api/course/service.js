@@ -33,7 +33,7 @@ const fetchUnits = async (email, skill, subject) => {
     .findOne({ skill }, { projection: { content: 1, _id: 0 } });
   const content = courseData["content"];
   await disconnect();
-  return content[student.class] ? content[student.class][subject] : [];
+  return content[student.class][subject] ? content[student.class][subject] : [];
 };
 
 module.exports = { fetchSubjectList, fetchUnits };
