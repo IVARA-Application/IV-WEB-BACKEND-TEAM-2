@@ -20,7 +20,18 @@ const fetchSaticItem = async (item) => {
 };
 
 const fetchSignedUrl = async (code) => {
-  return getSignedUrl(code);
+  console.log("Here");
+  const data = await (await connect()).collection("videos").findOne({ code });
+  console.log(data);
+  if (data === null)
+    // Throw error if data was not found
+    throw {
+      custom: true,
+      code: 404,
+      message: `Video code was not found in the database.`,
+    };
+  await disconnect();
+  return { url: getSignedUrl(data.objectName), title: data.title };
 };
 
 module.exports = { fetchSaticItem, fetchSignedUrl };

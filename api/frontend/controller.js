@@ -1,6 +1,7 @@
 "use strict";
 
 const { Router } = require("express");
+const { disconnect } = require("../utilities/database");
 const logger = require("../utilities/logger");
 const { fetchSaticItem, fetchSignedUrl } = require("./service");
 
@@ -9,6 +10,7 @@ const fetchItemController = async (req, res) => {
     // Pass control to service layer
     res.json(await fetchSaticItem(req.path.item));
   } catch (error) {
+    await disconnect();
     logger.error(error);
     if (error.custom) {
       return res
@@ -24,8 +26,9 @@ const fetchItemController = async (req, res) => {
 const fetchSignedUrlController = async (req, res) => {
   try {
     // Pass control to service layer
-    res.json({ url: await fetchSignedUrl(req.query.code) });
+    res.json(await fetchSignedUrl(req.query.code));
   } catch (error) {
+    await disconnect();
     logger.error(error);
     if (error.custom) {
       return res
