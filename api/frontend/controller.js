@@ -1,6 +1,9 @@
 "use strict";
 
 const { Router } = require("express");
+const {
+  studentAuthMiddleware,
+} = require("../middlewares/authenticationMiddleware");
 const { disconnect } = require("../utilities/database");
 const logger = require("../utilities/logger");
 const { fetchSaticItem, fetchSignedUrl } = require("./service");
@@ -44,7 +47,7 @@ const fetchSignedUrlController = async (req, res) => {
 const app = Router();
 
 module.exports = () => {
-  app.get("/video", fetchSignedUrlController);
+  app.get("/video", studentAuthMiddleware, fetchSignedUrlController);
   app.get("/:item", fetchItemController);
 
   return app;

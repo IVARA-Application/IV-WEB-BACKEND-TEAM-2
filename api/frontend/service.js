@@ -20,9 +20,7 @@ const fetchSaticItem = async (item) => {
 };
 
 const fetchSignedUrl = async (code) => {
-  console.log("Here");
   const data = await (await connect()).collection("videos").findOne({ code });
-  console.log(data);
   if (data === null)
     // Throw error if data was not found
     throw {
