@@ -15,7 +15,7 @@ const studentAuthMiddleware = async (req, res, next) => {
           custom: true,
           code: 403,
           message:
-            "Could not verify admin token. Student is forbidden from doing this action.",
+            "Could not verify token. Student is forbidden from doing this action.",
         };
       res.locals.user = decodedData;
       return next();
@@ -28,15 +28,7 @@ const studentAuthMiddleware = async (req, res, next) => {
     };
   } catch (error) {
     logger.error(error);
-    await disconnect();
-    if (error.custom) {
-      return res
-        .status(error.code)
-        .json({ success: false, message: error.message });
-    }
-    res
-      .status(500)
-      .json({ success: false, message: "Something went wrong at the server." });
+    res.status(403).json({ success: false, message: error.message });
   }
 };
 

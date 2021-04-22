@@ -1,5 +1,6 @@
 "use strict";
 
+const { getSignedUrl } = require("../utilities/awsS3");
 const { connect, disconnect } = require("../utilities/database");
 
 const fetchSaticItem = async (item) => {
@@ -18,4 +19,8 @@ const fetchSaticItem = async (item) => {
   return data.content;
 };
 
-module.exports = { fetchSaticItem };
+const fetchSignedUrl = async (code) => {
+  return getSignedUrl(code);
+};
+
+module.exports = { fetchSaticItem, fetchSignedUrl };
