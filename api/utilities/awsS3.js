@@ -10,11 +10,18 @@ const s3 = new AWS.S3({
   }),
 });
 
-const getSignedUrl = (objectName) => {
+/**
+ * Get a Signed URL for the object
+ * @param {string} objectName The name of the object
+ * @param {number} ttl Optional: TTL value in seconds, defaults to 7200
+ * @returns
+ */
+const getSignedUrl = (objectName, ttl = 7200) => {
   s3.headObject(objectName);
   return s3.getSignedUrl("getObject", {
     Bucket: process.env.BUCKET_NAME,
     Key: objectName,
+    Expires: ttl,
   });
 };
 
