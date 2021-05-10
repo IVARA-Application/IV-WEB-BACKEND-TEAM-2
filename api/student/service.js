@@ -37,6 +37,11 @@ const verifyStudentLogin = async (username, password) => {
   };
 };
 
+/**
+ * Fetch student profile data
+ * @param {string} email The email of the student
+ * @returns Student profile data
+ */
 const fetchStudentProfile = async (email) => {
   const student = await (await connect())
     .collection("students")
@@ -120,7 +125,7 @@ const addNewStudent = async (
  * Add students in bulk
  * @param {Buffer} file The buffer of the CSV file
  * @param {string} code The school code
- * @returns
+ * @returns Buffer of the CSV file
  */
 const addNewStudentsInBulk = async (file, code) => {
   const jsonData = await converter.csv2jsonAsync(file.toString());
